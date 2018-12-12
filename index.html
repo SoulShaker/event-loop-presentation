@@ -1,0 +1,227 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no"
+    />
+
+    <title>reveal.js</title>
+
+    <link rel="stylesheet" href="css/reveal.css" />
+    <link rel="stylesheet" href="css/theme/black.css" />
+
+    <!-- Theme used for syntax highlighting of code -->
+    <link rel="stylesheet" href="lib/css/zenburn.css" />
+
+    <!-- Printing and PDF exports -->
+    <script>
+      var link = document.createElement("link");
+      link.rel = "stylesheet";
+      link.type = "text/css";
+      link.href = window.location.search.match(/print-pdf/gi)
+        ? "css/print/pdf.css"
+        : "css/print/paper.css";
+      document.getElementsByTagName("head")[0].appendChild(link);
+    </script>
+  </head>
+  <body>
+    <div class="reveal">
+      <div class="slides">
+        <section>
+          <h1>Event Loop in JS</h1>
+          <p class="fragment">and what is that even mean</p>
+          <aside class="notes">
+            Hello everyone. My name is Konstantin Golovan. And today I want to
+            talk about Event Loop in JavaScript.
+          </aside>
+        </section>
+        <section>
+          <h1>Introduction</h1>
+          <aside class="notes">
+            You’ve probably heard that JavaScript is a single-threaded language.
+            You may have even heard the terms Call Stack and Event Queue. Most
+            people know that the Event Loop is what allows JavaScript to use
+            callbacks and promises, but there’s a lot more to it. Without going
+            into too much details we’ll have a high level view of how JavaScript
+            code is actually executed.
+          </aside>
+        </section>
+        <section>
+          <section>
+            <h2>Concepts</h2>
+            <p>
+              JavaScript has a concurrency model based on an "event loop".
+              <br />
+              This model is quite different from models in other languages like
+              C and Java.
+            </p>
+          </section>
+          <section>
+            <h2>Concepts</h2>
+            <div>
+              <img
+                src="https://habrastorage.org/getpro/habr/post_images/4d8/4ac/86a/4d84ac86aaa8de45acf34a16ae928191.png"
+                alt="JS concurrency model"
+                width="700"
+                height="500"
+              />
+            </div>
+            <aside class="notes">
+              So here on the picture we have an overview of basic components in
+              a browser.
+            </aside>
+          </section>
+          <section>
+            <h2>Concepts</h2>
+            <p>Heap - large mostly unstructured region of memory</p>
+            <p class="fragment">
+              Call Stack represents the single thread provided for JavaScript
+              code execution.
+              <img
+                src="https://habrastorage.org/getpro/habr/post_images/ab6/77c/bf5/ab677cbf53bdb98ffbb5c017883a692e.png"
+                alt=""
+              />
+            </p>
+            <p class="fragment">
+              Web APIs are built into your web browser, and are able to expose
+              data from the browser and surrounding computer environment and do
+              useful complex things with it
+            </p>
+            <aside class="notes">
+              Heap is a large mostly unstructured region of memory. Call Stack
+              represents the single thread provided for JavaScript code
+              execution. <br /><br />It's a data structure which records
+              basically where in the program we are, if we step into a function,
+              we put something on to the stack, if we return from a function, we
+              pop off the top of the stack. <br /><br />Web APIs are built into
+              your web browser, and are able to expose data from the browser and
+              surrounding computer environment and do useful complex things with
+              it. For example, browser provides such APIs as DOM, XMLHttpRequest
+              and timers.
+            </aside>
+          </section>
+        </section>
+        <section>
+          <h2>JavaScript is a single threaded programming language</h2>
+          <aside class="notes">
+            So, JavaScript is a single threaded programming language, single
+            threaded Runtime, it has a single call stack. And it can do one
+            thing at a time, that's what a single thread means, the program can
+            run one piece of code at a time. <br /><br />Imagine we have a
+            complicated algorithm of processing images which is executed in a
+            browser. When there is a function in the call stack, browser can’t
+            do anything. He is stuck. He can’t render, can’t execute other
+            functions. The same would happen if we wouldn’t know anything about
+            asynchronous and we would try to make synchronous requests to the
+            network.
+          </aside>
+        </section>
+        <section>
+          <h2>So how can we solve this problem?</h2>
+          <aside class="notes">
+            So how can we solve this problem? Well there are asynchronous
+            callbacks, promises and other stuff. There's almost no blocking
+            functions in the browser, they're all made asynchronous, which
+            basically means we run some code, give it a callback, and run that
+            later.
+          </aside>
+        </section>
+        <section class="event-loop-code">
+          <h2>Event Loop</h2>
+          <aside class="notes">
+            Let’s look at the example. Try to think about what comes after what.
+            So “Hi” comes first, then we run the setTimeout, but that queue's
+            the console log for future so we skip on to another console.log and then five
+            seconds later we log "rsschool". One should mention that 5 seconds
+            timeout doesn’t mean that this callback is going to be executed
+            exactly after 5 seconds. It actually means minimum delay. So how
+            does this work? Let’s run the code.
+          </aside>
+          <div data-markdown>
+            <textarea data-template>
+				```javascript 
+				console.log('Hi'); 
+				setTimeout(function rsschool() {
+					console.log('RSSchool'); 
+				}, 5000); 
+				console.log('There');
+				```
+			      </textarea
+            >
+          </section>
+        </section>
+        <section class="event-loop-code2">
+          <h2>Event Loop</h2>
+          <div data-markdown>
+            <textarea data-template>
+				```javascript 
+				console.log('Hi'); 
+				setTimeout(function rsschool() {
+					console.log('RSSchool'); 
+				}, 0); 
+				console.log('There');
+				```
+			      </textarea
+            >
+          </div>
+          <aside class="notes">
+            We can also set timeout to zero. But the result will be the same. The difference is that it's going to complete immediately and push it on to the queue. 
+          </aside>
+        </section>
+        <section>
+          <h2>So do I know everything about Event Loop now?</h2>
+          <p class="fragment">Promises, Job Queue, Microtasks</p>
+          <a
+            class="fragment"
+            href="https://jakearchibald.com/2015/tasks-microtasks-queues-and-schedules/"
+            >https://jakearchibald.com/2015/tasks-microtasks-queues-and-schedules/</a
+          >
+          <aside class="notes">
+            Microtasks are usually scheduled for things that should happen
+            straight after the currently executing script, such as reacting to a
+            batch of actions, or to make something async without taking the
+            penalty of a whole new task. The microtask queue is processed after
+            callbacks as long as no other JavaScript is mid-execution, and at
+            the end of each task. Any additional microtasks queued during
+            microtasks are added to the end of the queue and also processed.
+            Microtasks include mutation observer callbacks and promise
+            callbacks.
+          </aside>
+        </section>
+        <section>
+          <h2>That's it! <br /><br />Thank you for your time!</h2>
+        </section>
+      </div>
+    </div>
+
+    <script src="lib/js/head.min.js"></script>
+    <script src="js/reveal.js"></script>
+    <script src="js/loopSlides.js"></script>
+    <script>
+      // More info about config & dependencies:
+      // - https://github.com/hakimel/reveal.js#configuration
+      // - https://github.com/hakimel/reveal.js#dependencies
+      Reveal.initialize({
+        dependencies: [
+          { src: "plugin/markdown/marked.js" },
+          { src: "plugin/markdown/markdown.js" },
+          { src: "plugin/notes/notes.js", async: true },
+          {
+            src: "plugin/highlight/highlight.js",
+            async: true,
+            callback: function() {
+              hljs.initHighlightingOnLoad();
+            }
+          }
+        ]
+      });
+
+      document.addEventListener("DOMContentLoaded", function() {
+        generateLoopSlides();
+        generateAnotherLoopSlides();
+      });
+    </script>
+  </body>
+</html>
