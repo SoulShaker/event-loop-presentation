@@ -1,1 +1,1 @@
-# soulshaker-2018Q3
+# Reveal.js presentation about Event Loop in JavaScript
